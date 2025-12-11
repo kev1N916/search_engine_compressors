@@ -4,20 +4,65 @@
 
 These schemes are optimized for compressing arrays of sorted, positive integers (like posting lists and document IDs) by encoding the differences (deltas) between successive numbers.
 
+# Compression Algorithms Overview
 
+The algorithms implemented are Simple9,Simple16,Simple8b,PForDelta and Rice Coding.
 
-### Implemented Algorithms
+## Algorithm Comparison
 
-This crate currently supports the following schemes, available as individual modules:
+### Simple-9/16/8b
 
-| Algorithm | Module | Description |
-| :--- | :--- | :--- |
-| **Simple9** | `simple9` | A variable-byte scheme that packs up to nine integers into a single 32-bit word. Excellent balance of speed and compression for moderate-to-sparse deltas. |
-| **Simple16** | `simple16` | Similar to Simple9, packing up to 16 integers per word. |
-| **Simple8b** | `simple8b` | Packs up to 8 integers into a 64-bit word using a selector and bit lengths. |
-| **PForDelta** | `p_for_delta` | Patched Frame of Reference Delta. A highly effective blocked compression scheme that is often the top performer in search engine use cases. |
-| **Variable-Byte** | `var_byte` | The classic byte-oriented compression scheme. Simple and effective for very large numbers. |
-| **Rice Coding** | `rice` | A form of entropy encoding often used for positive integers with a geometric distribution. |
+**Alignment:** Word (e.g., 32/64-bit)
+
+**Core Principle:** Packs a variable number of small integers into a fixed-size word using a selector (scheme).
+
+**Primary Use Cases:**
+- Inverted indexes
+- High-speed lookup tables
+
+**Key Advantage:** Extremely fast decoding speed due to word alignment.
+
+---
+
+### PForDelta
+
+**Alignment:** Block/Word
+
+**Core Principle:** Compresses a block by fitting the majority of values into a fixed, small bit-width *B* and treating the few larger values as exceptions.
+
+**Primary Use Cases:**
+- Inverted indexes (postings lists)
+- Time-series data
+
+**Key Advantage:** Excellent balance between compression ratio and decoding speed.
+
+---
+
+### Variable-Byte (VByte)
+
+**Alignment:** Byte
+
+**Core Principle:** Uses a variable number of bytes (1 to 10) per integer, flagged by the Most Significant Bit (MSB).
+
+**Primary Use Cases:**
+- Database systems
+- General data storage
+
+**Key Advantage:** Simple, highly byte-aligned, and great for lists with many small numbers.
+
+---
+
+### Rice Coding
+
+**Alignment:** Bit-wise
+
+**Core Principle:** A specialized form of Golomb coding that uses a power-of-two parameter *k* to encode numbers into a quotient (unary) and a remainder (fixed-length).
+
+**Primary Use Cases:**
+- Compressing residuals
+- Highly skewed distributions (e.g., post-delta-encoding)
+
+**Key Advantage:** Optimal entropy coding for data following a geometric distribution; fast bitwise operations.
 
 ## 🛠️ Usage
 

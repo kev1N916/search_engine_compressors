@@ -1,6 +1,6 @@
 [package]
 name = "search_engine_compressors"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Kevin Jacob kevintj916@gmail.com" ]
 description = "Implementation of various compression algorithms commonly used in search engines like Simple9,Simple16,Simple8b,Varbyte,PForDelta and Rice"
 keywords = ["compression", "search_engine", "indexing","inverted_index","simple9"]
