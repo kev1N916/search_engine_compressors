@@ -1,0 +1,12 @@
+[package]
+name = "search_engine_compressors"
+version = "0.1.0"
+authors = ["Kevin Jacob kevintj916@gmail.com" ]
+description = "Implementation of various compression algorithms commonly used in search engines like Simple9,Simple16,Simple8b,Varbyte,PForDelta and Rice"
+keywords = ["compression", "search_engine", "indexing","inverted_index","simple9"]
+repository = "https://github.com/kev1N916/search_engine_compressors"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[dependencies]
+rand = "0.8"
