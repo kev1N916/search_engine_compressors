@@ -64,7 +64,7 @@ const SELECTORS: [Simple9Selector; 9] = [
 ];
 
 pub fn compress(list: &Vec<u32>) -> Vec<u8> {
-    let mut encoded_result: Vec<u8> = vec![];
+    let mut encoded_result: Vec<u8> = Vec::with_capacity(200);
 
     let n = list.len();
     let mut i = 0;
@@ -77,7 +77,7 @@ pub fn compress(list: &Vec<u32>) -> Vec<u8> {
 
             while idx < n {
                 if list[idx] > MAX_NUMBER_POSSIBLE {
-                    panic!();
+                    panic!("Exceeds Maximum Number possible for Simple9");
                 }
                 if no_of_items == selector.no_of_items {
                     break;
@@ -92,7 +92,7 @@ pub fn compress(list: &Vec<u32>) -> Vec<u8> {
             }
 
             if no_of_items == selector.no_of_items || idx == n {
-                encoded_result.extend_from_slice(&data.to_le_bytes());
+                encoded_result.extend(&data.to_le_bytes());
                 i = idx;
                 break;
             }
@@ -103,7 +103,7 @@ pub fn compress(list: &Vec<u32>) -> Vec<u8> {
 }
 
 fn decompress_u32(data: u32, decoded_result: &mut Vec<u32>) {
-    let mut mut_data = data.clone();
+    let mut mut_data = data;
     let selector_idx = data & SELECTOR_MASK;
     mut_data = mut_data >> SELECTOR_BITS;
     match selector_idx {

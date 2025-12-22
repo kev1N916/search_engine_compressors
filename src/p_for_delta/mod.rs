@@ -129,6 +129,7 @@ pub fn compress(values: &[u32]) -> Vec<u8> {
     let mut exc_size = ExceptionSize::BitsNotNeeded;
     if exceptions.len() != 0 {
         let max_val = exceptions.iter().map(|(_, value)| *value).max().unwrap();
+        // Find how many bits needed for the exception
         exc_size = ExceptionSize::from_max_value(max_val);
     }
 
@@ -167,8 +168,10 @@ pub fn compress(values: &[u32]) -> Vec<u8> {
     }
 
     // Write b-bit slots
-    write_packed_bits(&mut compressed, &slots, b);
-
+    let packed_numbers = write_packed_bits(&slots, b);
+    for j in packed_numbers {
+        compressed.extend_from_slice(&j.to_le_bytes());
+    }
     // Write exception values
     for (_, val) in &exceptions {
         match exc_size {
@@ -298,7 +301,7 @@ fn force_intermediate_exceptions(
     result
 }
 
-fn write_packed_bits(output: &mut Vec<u8>, values: &[u32], bits_per_value: usize) {
+fn write_packed_bits(values: &[u32], bits_per_value: usize) -> Vec<u32> {
     let mut compressed: Vec<u32> = vec![0; 4 * bits_per_value]; // Creates actual elements
     let mut i = 0;
     let mut j = 0;
@@ -307,9 +310,8 @@ fn write_packed_bits(output: &mut Vec<u8>, values: &[u32], bits_per_value: usize
         i += 32;
         j += bits_per_value;
     }
-    for j in compressed {
-        output.extend_from_slice(&j.to_le_bytes());
-    }
+
+    compressed
 }
 
 fn read_packed_bits(input: &[u32], count: usize, bits_per_value: usize) -> Vec<u32> {
@@ -380,7 +382,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -410,7 +412,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -440,7 +442,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -470,7 +472,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -500,7 +502,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -530,7 +532,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -560,7 +562,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -590,7 +592,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -620,7 +622,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -650,7 +652,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -680,7 +682,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -710,7 +712,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -740,7 +742,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -770,7 +772,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -800,7 +802,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -830,7 +832,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -860,7 +862,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -887,10 +889,9 @@ mod tests {
         let encoded = compress(&original);
 
         let decoded = decompress(&encoded);
-
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -920,7 +921,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -950,7 +951,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -980,7 +981,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1010,7 +1011,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1040,7 +1041,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1070,7 +1071,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1100,7 +1101,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1130,7 +1131,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1160,7 +1161,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1190,7 +1191,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1220,7 +1221,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1250,7 +1251,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1280,7 +1281,7 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 
     #[test]
@@ -1310,6 +1311,6 @@ mod tests {
 
         // Decoded may have padding zeros, so check prefix matches
         assert!(decoded.len() == original.len());
-        assert_eq!(&decoded[..original.len()], &original[..]);
+        assert_eq!(&decoded, &original);
     }
 }

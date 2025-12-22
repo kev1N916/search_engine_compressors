@@ -136,18 +136,18 @@ pub fn compress(numbers: &[u32], k: Option<u8>) -> Vec<u8> {
 ///
 /// # Returns
 /// Original array of u32 values, or None if decoding fails
-pub fn decompress(encoded: &[u8]) -> Option<Vec<u32>> {
+pub fn decompress(encoded: &[u8]) -> Vec<u32> {
     if encoded.is_empty() {
-        return None;
+        return Vec::new();
     }
 
     let mut reader = BitReader::new(encoded.to_vec());
 
     // Read the parameter k
-    let k = reader.read_bits(5)? as u8;
+    let k = reader.read_bits(5).unwrap() as u8;
 
     // Read the number of values
-    let count = reader.read_bits(32)?;
+    let count = reader.read_bits(32).unwrap();
 
     let mut numbers = Vec::with_capacity(count as usize);
 
@@ -155,7 +155,7 @@ pub fn decompress(encoded: &[u8]) -> Option<Vec<u32>> {
         // Read quotient (unary coded: count zeros until we hit a one)
         let mut q = 0u32;
         loop {
-            let bit = reader.read_bit()?;
+            let bit = reader.read_bit().unwrap();
             if bit {
                 break;
             }
@@ -163,14 +163,14 @@ pub fn decompress(encoded: &[u8]) -> Option<Vec<u32>> {
         }
 
         // Read remainder (k bits in binary)
-        let r = reader.read_bits(k)?;
+        let r = reader.read_bits(k).unwrap();
 
         // Reconstruct the number: n = q * 2^k + r
         let n = (q << k) | r;
         numbers.push(n);
     }
 
-    Some(numbers)
+    numbers
 }
 
 #[cfg(test)]
@@ -181,7 +181,7 @@ mod tests {
     fn test_basic_compression() {
         let numbers = vec![0, 1, 2, 3, 4, 5];
         let encoded = compress(&numbers, Some(2));
-        let decoded = decompress(&encoded).unwrap();
+        let decoded = decompress(&encoded);
         assert_eq!(numbers, decoded);
     }
 
@@ -189,7 +189,7 @@ mod tests {
     fn test_auto_parameter() {
         let numbers = vec![10, 12, 15, 11, 13, 14, 16];
         let encoded = compress(&numbers, None);
-        let decoded = decompress(&encoded).unwrap();
+        let decoded = decompress(&encoded);
         assert_eq!(numbers, decoded);
     }
 
@@ -197,7 +197,7 @@ mod tests {
     fn test_large_numbers() {
         let numbers = vec![1000, 1024, 2048, 4096];
         let encoded = compress(&numbers, Some(10));
-        let decoded = decompress(&encoded).unwrap();
+        let decoded = decompress(&encoded);
         assert_eq!(numbers, decoded);
     }
 
@@ -205,7 +205,7 @@ mod tests {
     fn test_single_value() {
         let numbers = vec![42];
         let encoded = compress(&numbers, Some(3));
-        let decoded = decompress(&encoded).unwrap();
+        let decoded = decompress(&encoded);
         assert_eq!(numbers, decoded);
     }
 
@@ -213,7 +213,7 @@ mod tests {
     fn test_zeros() {
         let numbers = vec![0, 0, 0, 0];
         let encoded = compress(&numbers, Some(1));
-        let decoded = decompress(&encoded).unwrap();
+        let decoded = decompress(&encoded);
         assert_eq!(numbers, decoded);
     }
 }
